@@ -1,0 +1,6 @@
+{
+	"python.autoComplete.extraPaths": [
+		"C:/Users/Andrey/AppData/Roaming/Autodesk/Autodesk Fusion 360/API/Python/defs"
+	],
+	"python.linting.pylintEnabled":	false
+}
