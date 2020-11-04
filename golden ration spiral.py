@@ -9,7 +9,7 @@ def run(context):
 		# Variables
 		small_circle_diameter = 3
 		big_circle_diameter = 20
-		number_of_circles = 50
+		number_of_circles = 500
 
 		# basic skeleton
 		app = adsk.core.Application.get()
@@ -68,8 +68,7 @@ def run(context):
 
 			# Make collection for the copied body
 			bodies = adsk.core.ObjectCollection.create()
-			# bodies.add(rootComp.bRepBodies.item(i+2))
-			bodies.add(rootComp.bRepBodies.item(2))
+			bodies.add(rootComp.bRepBodies.item(i+2))
 			
 			# Calculate spherical position of the sphere
 			lon=(i*golden_ratio-int(i*golden_ratio))*2*pi_value
@@ -96,18 +95,18 @@ def run(context):
 			i += 1
 		
 		# combine bodies
-		bodies = adsk.core.ObjectCollection.create()
+		other_bodies = adsk.core.ObjectCollection.create()
 		i = 0
 		for next_body in rootComp.bRepBodies:
 			if i == 0:
 				i = 1
 				continue
-			bodies.add(rootComp.bRepBodies.item(i))
+			other_bodies.add(rootComp.bRepBodies.item(i))
 			i += 1
 
 		combineFeatures = features.combineFeatures
 		main_body = rootComp.bRepBodies.item(0)
-		combineFeatureInput = combineFeatures.createInput(main_body, bodies)
+		combineFeatureInput = combineFeatures.createInput(main_body, other_bodies)
 		combineFeatureInput.operation = 0
 		combineFeatureInput.isKeepToolBodies = False
 		combineFeatureInput.isNewComponent = False
