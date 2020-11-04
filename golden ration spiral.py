@@ -7,9 +7,9 @@ def run(context):
 	ui = None
 	try:
 		# Variables
-		small_circle_diameter = 2
+		small_circle_diameter = 3
 		big_circle_diameter = 20
-		number_of_circles = 10
+		number_of_circles = 50
 
 		# basic skeleton
 		app = adsk.core.Application.get()
@@ -20,6 +20,7 @@ def run(context):
 		# Get the root component of the active design.
 		rootComp = design.rootComponent
 		features = rootComp.features
+		# combineFeatures = features.combineFeatures
 
 		#--------------------------------------#
 		# Create a new sketch on the xy plane.
@@ -56,59 +57,64 @@ def run(context):
 		small_circle_ext = revolves.add(small_circle_revInput)
 		#--------------------------------------#
 
-		# Move small circle
+		i = 0
+		pi_value = 3.14159
+		golden_ratio = 0.618034
+		golden_ratio_angle = golden_ratio*2*pi_value
+
+		while i < number_of_circles:
+			# Copy small circle
+			rootComp.features.copyPasteBodies.add(rootComp.bRepBodies.item(1))
+
+			# Make collection for the copied body
+			bodies = adsk.core.ObjectCollection.create()
+			# bodies.add(rootComp.bRepBodies.item(i+2))
+			bodies.add(rootComp.bRepBodies.item(2))
+			
+			# Calculate spherical position of the sphere
+			lon=(i*golden_ratio-int(i*golden_ratio))*2*pi_value
+			if lon > pi_value:
+				lon -= 2*pi_value
+			
+			lat = math.asin(-1 + 2*i/(float(number_of_circles)))
+
+			# Calculate decart coordinates
+			xCoord = big_circle_diameter*math.cos(lat)*math.sin(lon)
+			yCoord = big_circle_diameter*math.cos(lat)*math.cos(lon)
+			zCoord = big_circle_diameter*math.sin(lat)
+			
+			# Create a transform to do move
+			vector = adsk.core.Vector3D.create(xCoord, yCoord, zCoord)
+			transform = adsk.core.Matrix3D.create()
+			transform.translation = vector
+
+			# Create a move feature
+			moveFeats = features.moveFeatures
+			moveFeatureInput = moveFeats.createInput(bodies, transform)
+			moveFeats.add(moveFeatureInput)
+			
+			i += 1
+		
+		# combine bodies
 		bodies = adsk.core.ObjectCollection.create()
-		bodies.add(rootComp.bRepBodies.item(1))
+		i = 0
+		for next_body in rootComp.bRepBodies:
+			if i == 0:
+				i = 1
+				continue
+			bodies.add(rootComp.bRepBodies.item(i))
+			i += 1
 
-		# Create a transform to do move
-		vector = adsk.core.Vector3D.create(0.0, 20.0, 0.0)
-		transform = adsk.core.Matrix3D.create()
-		transform.translation = vector
-
-        # Create a move feature
-		moveFeats = features.moveFeatures
-		moveFeatureInput = moveFeats.createInput(bodies, transform)
-		moveFeats.add(moveFeatureInput)
-
-		# copy sphere
-
-		rootComp.features.copyPasteBodies.add(rootComp.bRepBodies.item(1))
+		combineFeatures = features.combineFeatures
+		main_body = rootComp.bRepBodies.item(0)
+		combineFeatureInput = combineFeatures.createInput(main_body, bodies)
+		combineFeatureInput.operation = 0
+		combineFeatureInput.isKeepToolBodies = False
+		combineFeatureInput.isNewComponent = False
+		returnValue = combineFeatures.add(combineFeatureInput)
 
 
-		# rootComp.features.copyPasteBodies.add(sourceBodies) # дописать копирование
 
-		#То что ниже, пока не важно 
-		# points = adsk.core.ObjectCollection.create() # Create an object collection for the points.
-
-		# sphere_radius = 5
-
-		# # Enter variables here. E.g. E = 50
-		# startRange = 0 # Start of range to be evaluated.
-		# # endRange = 2*math.pi # End of range to be evaluated.
-		# splinePoints = 1000 # Number of points that splines are generated.
-		# # WARMING: Using more than a few hundred points may cause your system to hang.
-		# i = 0
-		# pi_value = 3.14159
-		# golden_ratio = 0.618034
-		# golden_ratio_angle = golden_ratio*2*pi_value
-
-		# while i <= splinePoints:
-		# 	lon=(i*golden_ratio-int(i*golden_ratio))*2*pi_value
-		# 	if lon > pi_value:
-		# 		lon -= 2*pi_value
-			
-		# 	lat = math.asin(-1 + 2*i/(float(splinePoints)))
-
-		# 	xCoord = sphere_radius*math.cos(lat)*math.sin(lon)
-		# 	yCoord = sphere_radius*math.cos(lat)*math.cos(lon)
-		# 	zCoord = sphere_radius*math.sin(lat)
-                 
-		# 	points.add(adsk.core.Point3D.create(xCoord,yCoord,zCoord))
-		# 	i = i + 1
-			
-		# #Generates the spline curve
-		# sketch.sketchCurves.sketchFittedSplines.add(points)
-	
 	# Error handeling
 	except:
 		if ui:
