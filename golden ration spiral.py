@@ -7,20 +7,20 @@ def run(context):
 	ui = None
 	try:
 		# Variables
-		small_circle_diameter = 2
+		small_circle_diameter = 0.2
 		big_circle_diameter = 10
-		number_of_circles = 500
+		number_of_circles = 10000
+
+		optimization_window_length = 20	# 20 is a good number, it is better to leave it as it is
 
 		# basic skeleton
 		app = adsk.core.Application.get()
 		ui = app.userInterface
-		# doc = app.documents.add(adsk.core.DocumentTypes.FusionDesignDocumentType) # Открывает новый файл
 		design = app.activeProduct
 
 		# Get the root component of the active design.
 		rootComp = design.rootComponent
 		features = rootComp.features
-		# combineFeatures = features.combineFeatures
 
 		#--------------------------------------#
 		# Create a new sketch on the xy plane.
@@ -42,7 +42,7 @@ def run(context):
 		small_circle_prof = circle_sketch.profiles.item(0)
 
 		# Create an revolution input to be able to define the input needed for a revolution
-		# while specifying the profile and that a new component is to be created
+		# while specifying the profile and that a new body is to be created
 		revolves = rootComp.features.revolveFeatures
 		big_circle_revInput = revolves.createInput(big_circle_prof, axisLine, adsk.fusion.FeatureOperations.NewBodyFeatureOperation)
 		small_circle_revInput = revolves.createInput(small_circle_prof, axisLine, adsk.fusion.FeatureOperations.NewBodyFeatureOperation)
@@ -57,28 +57,30 @@ def run(context):
 		small_circle_ext = revolves.add(small_circle_revInput)
 		#--------------------------------------#
 
+		# Variables for golden ration algorithm
 		i = 0	# iterator of circles
 		optimization_counter = 0	# optimization counter
+		optimization_counter_iteration = 0	# optimization counter
 		pi_value = 3.14159
 		golden_ratio = 0.618034
 		golden_ratio_angle = golden_ratio*2*pi_value
 
 		while i < number_of_circles:
-			# Copy small circle
+			## Copy small circle
 			rootComp.features.copyPasteBodies.add(rootComp.bRepBodies.item(1))
 
 			# Make collection for the copied body
 			bodies = adsk.core.ObjectCollection.create()
-			bodies.add(rootComp.bRepBodies.item(i+2))
+			bodies.add(rootComp.bRepBodies.item(i+2 - optimization_counter_iteration*optimization_window_length))
 			
-			# Calculate spherical position of the sphere
+			# Calculate spherical position of that particular small sphere
 			lon=(i*golden_ratio-int(i*golden_ratio))*2*pi_value
 			if lon > pi_value:
 				lon -= 2*pi_value
 			
 			lat = math.asin(-1 + 2*i/(float(number_of_circles)))
 
-			# Calculate decart coordinates
+			# Calculate сartesian coordinates from spherical
 			xCoord = big_circle_diameter*math.cos(lat)*math.sin(lon)
 			yCoord = big_circle_diameter*math.cos(lat)*math.cos(lon)
 			zCoord = big_circle_diameter*math.sin(lat)
@@ -93,16 +95,42 @@ def run(context):
 			moveFeatureInput = moveFeats.createInput(bodies, transform)
 			moveFeats.add(moveFeatureInput)
 			
+			## Optimize script run-time.
+			# for run-time optimization, we toggle "Do not capture design history" for every optimization_window_length small spheres 
+			# and then immediately return design history. This script uses the move feature which is impossible without design history. 
+			# Relaunching design history highly optimizes fusion 360 script runtime by clearing design history over and over again.
+			# Also after every optimization_window_length small spheres, they all combine into a single body to optimize the number of bodies in use.
 			optimization_counter += 1
 
-			if optimization_counter == 20:
+			if optimization_counter == optimization_window_length:
 				optimization_counter = 0
+				optimization_counter_iteration +=1
+				
+				# Disable design history
 				design.designType = adsk.fusion.DesignTypes.DirectDesignType
 				design.designType = adsk.fusion.DesignTypes.ParametricDesignType
+
+				# combine all bodies but the first small sphere into one body
+				new_other_bodies = adsk.core.ObjectCollection.create()
+				body_iterator = 0
+				for next_body in rootComp.bRepBodies:
+					if body_iterator < 2:
+						body_iterator += 1
+						continue
+					new_other_bodies.add(rootComp.bRepBodies.item(body_iterator))
+					body_iterator += 1
 				
+				combineFeatures = features.combineFeatures
+				main_body = rootComp.bRepBodies.item(0)
+				combineFeatureInput = combineFeatures.createInput(main_body, new_other_bodies)
+				combineFeatureInput.operation = 0
+				combineFeatureInput.isKeepToolBodies = False
+				combineFeatureInput.isNewComponent = False
+				returnValue = combineFeatures.add(combineFeatureInput)
+
 			i += 1
 		
-		# combine bodies
+		# combine all remaining bodies into one
 		other_bodies = adsk.core.ObjectCollection.create()
 		i = 0
 		for next_body in rootComp.bRepBodies:
@@ -119,12 +147,6 @@ def run(context):
 		combineFeatureInput.isKeepToolBodies = False
 		combineFeatureInput.isNewComponent = False
 		returnValue = combineFeatures.add(combineFeatureInput)
-
-
-		# design.designType = adsk.fusion.DesignTypes.DirectDesignType
-
-		# design.designType = adsk.fusion.DesignTypes.ParametricDesignType
-
 
 	# Error handeling
 	except:
