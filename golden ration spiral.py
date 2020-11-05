@@ -7,8 +7,8 @@ def run(context):
 	ui = None
 	try:
 		# Variables
-		small_circle_diameter = 3
-		big_circle_diameter = 20
+		small_circle_diameter = 2
+		big_circle_diameter = 10
 		number_of_circles = 500
 
 		# basic skeleton
@@ -57,7 +57,8 @@ def run(context):
 		small_circle_ext = revolves.add(small_circle_revInput)
 		#--------------------------------------#
 
-		i = 0
+		i = 0	# iterator of circles
+		optimization_counter = 0	# optimization counter
 		pi_value = 3.14159
 		golden_ratio = 0.618034
 		golden_ratio_angle = golden_ratio*2*pi_value
@@ -92,6 +93,13 @@ def run(context):
 			moveFeatureInput = moveFeats.createInput(bodies, transform)
 			moveFeats.add(moveFeatureInput)
 			
+			optimization_counter += 1
+
+			if optimization_counter == 20:
+				optimization_counter = 0
+				design.designType = adsk.fusion.DesignTypes.DirectDesignType
+				design.designType = adsk.fusion.DesignTypes.ParametricDesignType
+				
 			i += 1
 		
 		# combine bodies
@@ -112,6 +120,10 @@ def run(context):
 		combineFeatureInput.isNewComponent = False
 		returnValue = combineFeatures.add(combineFeatureInput)
 
+
+		# design.designType = adsk.fusion.DesignTypes.DirectDesignType
+
+		# design.designType = adsk.fusion.DesignTypes.ParametricDesignType
 
 
 	# Error handeling
