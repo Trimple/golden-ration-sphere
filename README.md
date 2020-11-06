@@ -2,17 +2,13 @@
 
 This is a python script for the fusion 360. This script is used to generate a solid sphere that is wrapped around with lots of smaller spheres. Here are some examples:
 
-### Bigger sphere radius - ; smaller sphere radius - ; the number of the smaller sphere - ;
-![]()
-
-### Bigger sphere radius - ; smaller sphere radius - ; the number of the smaller sphere - ;
-![]()
-
-### Bigger sphere radius - ; smaller sphere radius - ; the number of the smaller sphere - ;
-![]()
-
-### Bigger sphere radius - ; smaller sphere radius - ; the number of the smaller sphere - ;
-![]()
+<p> 
+<image align="middle" src="/images/2000_spheres.png" alt="2000 spheres" width = 45%>
+<image align="middle" src="/images/500_spheres.png" alt="500 spheres" width = 45%> <b>
+<image align="middle" src="/images/50_spheres.png" alt="50 spheres" width = 45%>
+<image align="middle" src="/images/30_spheres.png" alt="30 spheres" width = 45%>
+</p>
+	
 
 The script uses golden ratio points distribution. An interactive example can be seen [here](https://www.openprocessing.org/sketch/41142).
 
