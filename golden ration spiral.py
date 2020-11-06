@@ -7,9 +7,9 @@ def run(context):
 	ui = None
 	try:
 		# Variables
-		small_circle_diameter = 0.2
+		small_circle_diameter = 1.5
 		big_circle_diameter = 10
-		number_of_circles = 10000
+		number_of_circles = 500
 
 		optimization_window_length = 20	# 20 is a good number, it is better to leave it as it is
 
