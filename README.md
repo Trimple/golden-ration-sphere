@@ -8,7 +8,8 @@ This is a python script for the fusion 360. This script is used to generate a so
 <image align="middle" src="/images/50_spheres.png" alt="50 spheres" width = 45%>
 <image align="middle" src="/images/30_spheres.png" alt="30 spheres" width = 45%>
 </p>
-	
+
+You can play with 200 spheres model [here](https://a360.co/3mSpRJ5)
 
 The script uses golden ratio points distribution. An interactive example can be seen [here](https://www.openprocessing.org/sketch/41142).
 
@@ -23,5 +24,3 @@ Right now script dosen't have a menue to input parameters from Fusion 360. You n
 		big_circle_diameter = 10
 		number_of_circles = 1000
 ```
-
-To run a script in Fusion 360 ... 
